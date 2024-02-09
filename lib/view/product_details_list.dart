@@ -1,12 +1,14 @@
+import 'dart:ffi';
+
 import 'package:product/allpackages.dart';
+
+import '../controller/cart_controller.dart';
+import '../utils/commonvariable.dart';
 
 class ProductDetailsList extends StatefulWidget {
    const ProductDetailsList(
-      {super.key, this.image, this.name, this.amount, this.desc, this.index});
-  final String? image;
-  final String? name;
-  final String? amount;
-  final String? desc;
+      {super.key,   this.index});
+   
   final int? index;
 
   @override
@@ -15,24 +17,38 @@ class ProductDetailsList extends StatefulWidget {
 
 class _ProductDetailsListState extends State<ProductDetailsList> {
   ProductController productController = Get.put(ProductController());
+    SharedPreferences ?prefs;
+    final CartController cartController = Get.put(CartController());
 
   var selectedindex = 0;
-  int count = 0;
+  int counter = 0;
 
-  void increment() {
+     _loadCounter() async {
+    prefs = await SharedPreferences.getInstance();
     setState(() {
-      count++;
+    counter = prefs!.getInt('counter') ?? 0;
     });
   }
 
-  void decrement() {
+  _incrementCounter() {
     setState(() {
-      if (count > 0) {
-        count--;
-      }
+      counter++;
     });
+    prefs!.setInt('counter',  counter);
   }
 
+  _decrementCounter() {
+    setState(() {
+      counter--;
+    });
+    prefs!.setInt('counter',  counter);
+  }
+  @override
+  void initState() {
+    
+    super.initState();
+    _loadCounter();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,7 +57,9 @@ class _ProductDetailsListState extends State<ProductDetailsList> {
         centerTitle: true,
         leading: InkWell(
             onTap: () {
+              
               Get.back();
+               
             },
             child: Icon(Icons.arrow_back_ios)),
         title: Text('Product Detail'),
@@ -67,12 +85,15 @@ class _ProductDetailsListState extends State<ProductDetailsList> {
             child: Text('No Data Found'),
           );
         }
+        else{
         return Padding(
           padding: const EdgeInsets.only(left: 20.0, right: 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+             
+
               SizedBox(
                 height: 3.0.hp,
               ),
@@ -83,7 +104,7 @@ class _ProductDetailsListState extends State<ProductDetailsList> {
                         color: screenbackground,
                         height: 30.0.hp,
                         width: 55.0.wp,
-                        child: Image.network(widget.image.toString())),
+                        child: Image.network(productController.getproductlist[0].data[widget.index!].productSmallImg)),
                   ),
                   Positioned(
                       right: 1.0.wp,
@@ -121,35 +142,19 @@ class _ProductDetailsListState extends State<ProductDetailsList> {
                 ],
               ),
               SizedBox(
-                height: 2.0.hp,
+                height: 1.5.hp,
               ),
               Text(
-                widget.name.toString(),
-                style: subtitleStyle,
-              ),
-              SizedBox(
-                height: 2.0.hp,
-              ),
-              ProductCountPage(amount: widget.amount.toString()),
-              SizedBox(
-                height: 1.0.hp,
-              ),
-              Text(
-                'About this Product',
-                style: amountStyle,
-              ),
-              SizedBox(
-                height: 1.0.hp,
-              ),
-              Text(
-                widget.desc.toString(),
+                productController.getproductlist[0].data[widget.index!].productName.toString(),
                 style: subtitleStyle,
               ),
               SizedBox(
                 height: 1.0.hp,
               ),
+               
+             
               SizedBox(
-                height: 10.0.hp,
+                height: 5.0.hp,
                 child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: productController
@@ -201,10 +206,81 @@ class _ProductDetailsListState extends State<ProductDetailsList> {
                       );
                     }),
               ),
-            ],
-          ),
-        );
-      }),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                     height: 5.0.hp,
+                                                    width: 28.0.wp,
+                                                    decoration: BoxDecoration(
+                                                      border: Border.all(color: subtitlecolor),
+                                                      borderRadius: BorderRadius.circular(50)
+                                                    ),
+                    child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.remove,size: 15,color: toptitlecolor,),
+                        onPressed: () {
+                          cartController.decrement(widget.index!);
+                          setState(() {
+                            
+                          });
+                        
+                        },
+                      ),
+                      Text('${cartController.counters[widget.index!].toString()}',style: amountStyle,),
+                      IconButton(
+                        icon: Icon(Icons.add,size: 15,color: toptitlecolor,),
+                        onPressed: () {
+                          cartController.increment(widget.index!);
+                          setState(() {
+                            
+                          });
+                        },
+                      ),
+                    ],
+                              )
+                           
+                            ]),
+                  ),
+                  SizedBox(height: 1.0.hp,),
+                Container(
+                  height: 4.0.hp,
+                  width: 20.0.wp,
+                  child: Row(children: [
+                     Text("\u{20B9}${productController.getproductlist[0].data[widget.index!].discountValue}",style:discountprice,),
+                     SizedBox(width: 2.0.wp,),
+                      Text("\u{20B9}${productController.getproductlist[0].data[widget.index!].discountValue. toString()}",style:amountStyle,),
+                  ]),
+                )
+                   
+                ],
+              ),
+           SizedBox(
+                height: 1.0.hp,
+              ),
+              Text(
+                'About this Product',
+                style: amountStyle,
+              ),
+              SizedBox(
+                height: 1.0.hp,
+              ),
+              Text(
+                productController.getproductlist[0].data[widget.index!].productDescription.toString(),
+                style: subtitleStyle,
+              ),
+              SizedBox(
+                height: 1.0.hp,
+              ),
+         ]) );
+  }}),
     );
   }
 }

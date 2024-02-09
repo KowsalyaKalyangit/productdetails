@@ -27,8 +27,8 @@ class SmallActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerRight,
+    return Padding(
+     padding: EdgeInsets.only(left: 70),
       child: InkWell(
         onTap: press,
         child: Container(
